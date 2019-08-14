@@ -1,0 +1,27 @@
+{
+  "name": "sitemap2csv",
+  "homepage": "https://github.com/firstandthird/sitemap2csv#readme",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/firstandthird/sitemap2csv.git"
+  },
+  "bin": {
+    "sitemap2csv": "./cli.js"
+  },
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "fast-xml-parser": "^3.12.19",
+    "wreck": "^14.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-firstandthird": "^4.4.0",
+    "eslint-plugin-import": "^2.18.2"
+  },
+  "eslintConfig": {
+    "extends": "firstandthird"
+  }
+}
