@@ -36,7 +36,7 @@ const parseXml = async (xmlContent) => {
 };
 
 // prints parsed sitemap to stdout in csv form;
-const exportCsv = async () => {
+const exportCsv = async (expandPaths) => {
   // do a sweep to get all the field names for the header row:
   const headerRow = {};
   allParsedSitemaps.forEach(entry => {
@@ -47,7 +47,22 @@ const exportCsv = async () => {
     });
   });
   const fields = Object.keys(headerRow);
-  console.log(fields.join(','));
+  if (expandPaths) {
+    // do an additional sweep to get all the path component names needed for the header row:
+    // eg 'folder1,folder2,folder3'
+    //add a 'path' field at the end:
+    headerRow.path = true;
+    allParsedSitemaps.forEach(entry => {
+      const path = new URL(entry.loc).pathname;
+      path.split('/').forEach((component, i) => {
+        // first one will be blank:
+        if (i > 0) {
+          headerRow[`folder${i}`] = true;
+        }
+      });
+    });
+  }
+  console.log(Object.keys(headerRow).join(','));
   // generate each row as csv:
   allParsedSitemaps.forEach(entry => {
     const row = fields.map(fieldName => {
@@ -56,53 +71,17 @@ const exportCsv = async () => {
       }
       return '';
     });
-    console.log(row.join(','));
-  });
-};
-
-// expands the components of each url path into columns:
-const exportCsvExpandPath = async (expandPaths) => {
-  // do a sweep to get all the field names for the header row:
-  const headerRow = {};
-  allParsedSitemaps.forEach(entry => {
-    Object.keys(entry).forEach(key => {
-      if (tags.includes(key)) {
-        headerRow[key] = true;
-      }
-    });
-  });
-  const fields = Object.keys(headerRow);
-  // do an additional sweep to get all the path component names needed for the header row:
-  // eg 'folder1,folder2,folder3'
-  //add a 'path' field at the end:
-  headerRow.path = true;
-  allParsedSitemaps.forEach(entry => {
-    const path = new URL(entry.loc).pathname;
-    path.split('/').forEach((component, i) => {
-      // first one will be blank:
-      if (i > 0) {
-        headerRow[`folder${i}`] = true;
-      }
-    });
-  });
-  console.log(Object.keys(headerRow).join(','));
-  // generate each row as csv, include the path and each of its components as well:
-  allParsedSitemaps.forEach(entry => {
-    const row = fields.map(fieldName => {
-      if (entry[fieldName]) {
-        return entry[fieldName];
-      }
-      return '';
-    });
-    const path = new URL(entry.loc).pathname;
-    row.push(path);
-    // store the components of the path as well:
-    path.split('/').forEach((component, i) => {
-      // first one will be blank again:
-      if (i > 0) {
-        row.push(component);
-      }
-    });
+    if (expandPaths) {
+      const path = new URL(entry.loc).pathname;
+      row.push(path);
+      // store the components of the path as well:
+      path.split('/').forEach((component, i) => {
+        // first one will be blank again:
+        if (i > 0) {
+          row.push(component);
+        }
+      });
+    }
     console.log(row.join(','));
   });
 };
@@ -114,8 +93,5 @@ sitemap2csv = async(url) => {
 
 module.exports = async(url, expandPaths = false) => {
   await sitemap2csv(url);
-  if (expandPaths) {
-    return exportCsvExpandPath();
-  }
-  return exportCsv();
+  return exportCsv(expandPaths);
 };
