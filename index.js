@@ -3,6 +3,7 @@ const parser = require('fast-xml-parser');
 const url = require('url');
 const parserOptions = {};
 
+const tags = ['loc', 'lastmod', 'changefreq', 'priority'];
 let allParsedSitemaps = [];
 let sitemap2csv;
 
@@ -39,8 +40,10 @@ const exportCsv = async (expandPaths) => {
   // do a sweep to get all the field names for the header row:
   const headerRow = {};
   allParsedSitemaps.forEach(entry => {
-    const fields = Object.keys(entry).forEach(key => {
-      headerRow[key] = true;
+    Object.keys(entry).forEach(key => {
+      if (tags.includes(key)) {
+        headerRow[key] = true;
+      }
     });
   });
   const fields = Object.keys(headerRow);
@@ -63,7 +66,9 @@ const exportCsvExpandPath = async (expandPaths) => {
   const headerRow = {};
   allParsedSitemaps.forEach(entry => {
     Object.keys(entry).forEach(key => {
-      headerRow[key] = true;
+      if (tags.includes(key)) {
+        headerRow[key] = true;
+      }
     });
   });
   const fields = Object.keys(headerRow);
