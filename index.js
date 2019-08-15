@@ -36,7 +36,7 @@ const parseXml = async (xmlContent) => {
 };
 
 // prints parsed sitemap to stdout in csv form;
-const exportCsv = async (expandPaths) => {
+const exportCsv = async () => {
   // do a sweep to get all the field names for the header row:
   const headerRow = {};
   allParsedSitemaps.forEach(entry => {
