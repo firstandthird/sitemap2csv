@@ -1,7 +1,7 @@
 {
   "name": "@firstandthird/sitemap2csv",
   "homepage": "https://github.com/firstandthird/sitemap2csv#readme",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/firstandthird/sitemap2csv.git"
