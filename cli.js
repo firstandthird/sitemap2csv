@@ -5,10 +5,14 @@ const sitemap2csv = require('./index.js');
 const run = () => {
   const [,, ...args] = process.argv;
   let expandPaths = false;
-  if (args.length > 1 && args[1] === '--expand-paths') {
+  if (args.length > 1 && args.includes('--expand-paths')) {
     expandPaths = true;
   }
-  sitemap2csv(args[0], expandPaths);
+  let structure = false;
+  if (args.length > 1 && args.includes('--structure')) {
+    structure = true;
+  }
+  sitemap2csv(args[0], expandPaths, structure);
 };
 
 run();

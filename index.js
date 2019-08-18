@@ -91,7 +91,30 @@ sitemap2csv = async(url) => {
   await parseXml(sitemap);
 };
 
-module.exports = async(url, expandPaths = false) => {
+// builds the site structure witht he --structure option
+const structureBody = {};
+const buildStructure = (entry) => {
+  const path = new URL(entry.loc).pathname;
+  const parts = path.split('/');
+  // iterate over the path components and count the number of occurences:
+  for (let i = 0; i < parts.length; i++) {
+    const currentPath = parts.slice(0, i).join('/');
+    if (currentPath !== '') {
+      structureBody[currentPath] = structureBody[currentPath] ? structureBody[currentPath] + 1 : 1;
+    }
+  }
+};
+
+module.exports = async(url, expandPaths = false, structure = true) => {
   await sitemap2csv(url);
-  return exportCsv(expandPaths);
+  if (structure) {
+    // get number of path components:
+    let pathCount = 0;
+    allParsedSitemaps.forEach(entry => {
+      buildStructure(entry);
+    });
+    console.log(structureBody);
+  } else {
+    exportCsv(expandPaths);
+  }
 };
