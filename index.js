@@ -108,8 +108,6 @@ const buildStructure = (entry) => {
 module.exports = async(url, expandPaths = false, structure = true) => {
   await sitemap2csv(url);
   if (structure) {
-    // get number of path components:
-    let pathCount = 0;
     allParsedSitemaps.forEach(entry => {
       buildStructure(entry);
     });
