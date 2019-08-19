@@ -111,7 +111,12 @@ module.exports = async(url, expandPaths = false, structure = true) => {
     allParsedSitemaps.forEach(entry => {
       buildStructure(entry);
     });
-    console.log(structureBody);
+    console.log('path,number of links');
+    Object.keys(structureBody).forEach(k => {
+      if (structureBody[k] > 1) {
+        console.log(`${k},${structureBody[k]}`);
+      }
+    });
   } else {
     exportCsv(expandPaths);
   }
