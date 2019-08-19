@@ -13,8 +13,10 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@hapi/hapi": "^18.3.2",
     "fast-xml-parser": "^3.12.19",
-    "wreck": "^14.2.0"
+    "wreck": "^14.2.0",
+    "yargs": "^13.3.0"
   },
   "devDependencies": {
     "eslint": "^6.1.0",
