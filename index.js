@@ -99,7 +99,10 @@ const buildStructure = (entry) => {
   // iterate over the path components and count the number of occurences:
   for (let i = 0; i < parts.length; i++) {
     const currentPath = parts.slice(0, i).join('/');
-    if (currentPath !== '') {
+    // top-level paths get counted as being under '/':
+    if (parts.length === 2) {
+      structureBody['/'] = structureBody['/'] ? structureBody['/'] + 1 : 1;
+    } else if (currentPath !== '') {
       structureBody[currentPath] = structureBody[currentPath] ? structureBody[currentPath] + 1 : 1;
     }
   }
@@ -112,7 +115,7 @@ module.exports = async(url, expandPaths = false, structure = true) => {
       buildStructure(entry);
     });
     console.log('path,number of links');
-    Object.keys(structureBody).forEach(k => {
+    Object.keys(structureBody).sort().forEach(k => {
       if (structureBody[k] > 1) {
         console.log(`${k},${structureBody[k]}`);
       }
