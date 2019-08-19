@@ -86,41 +86,41 @@ const exportCsv = async (expandPaths) => {
   });
 };
 
-sitemap2csv = async(url) => {
+sitemap2csv = async(url, countSingles) => {
   const sitemap = await getSitemap(url);
   await parseXml(sitemap);
 };
 
-// builds the site structure witht he --structure option
+// builds the site structure with the --structure option
 const structureBody = {};
 const buildStructure = (entry) => {
-  const path = new URL(entry.loc).pathname;
-  const parts = path.split('/');
-  // iterate over the path components and count the number of occurences:
-  for (let i = 0; i < parts.length; i++) {
-    const currentPath = parts.slice(0, i).join('/');
-    // top-level paths get counted as being under '/':
-    if (parts.length === 2) {
-      structureBody['/'] = structureBody['/'] ? structureBody['/'] + 1 : 1;
-    } else if (currentPath !== '') {
-      structureBody[currentPath] = structureBody[currentPath] ? structureBody[currentPath] + 1 : 1;
-    }
+  let path = new URL(entry.loc).pathname;
+  // make sure paths don't have trailing slash:
+  if (path.endsWith('/')) {
+    path = path.slice(0, path.length - 1);
   }
+  const parts = path.split('/');
+  // only count the children *directly* beneath each path:
+  let currentPath = parts.slice(0, parts.length - 1).join('/');
+  if (currentPath === '') {
+    currentPath = '/';
+  }
+  structureBody[currentPath] = structureBody[currentPath] ? structureBody[currentPath] + 1 : 1;
 };
 
-module.exports = async(url, expandPaths = false, structure = true) => {
+module.exports = async(url, expandPaths, structure, countSingles, limit) => {
   await sitemap2csv(url);
   if (structure) {
     allParsedSitemaps.forEach(entry => {
-      buildStructure(entry);
+      buildStructure(entry, countSingles, limit);
     });
     console.log('path,number of links');
     Object.keys(structureBody).sort().forEach(k => {
-      if (structureBody[k] > 1) {
+      if (countSingles || structureBody[k] > 1) {
         console.log(`${k},${structureBody[k]}`);
       }
     });
   } else {
-    exportCsv(expandPaths);
+    exportCsv(expandPaths, limit);
   }
 };
