@@ -15,6 +15,7 @@
   "dependencies": {
     "@hapi/hapi": "^18.3.2",
     "fast-xml-parser": "^3.12.19",
+    "lodash": "^4.17.15",
     "wreck": "^14.2.0",
     "yargs": "^13.3.0"
   },

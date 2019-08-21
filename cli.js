@@ -10,7 +10,13 @@ const argv = require('yargs')
 .option('s', {
     alias: 'structure',
     default: false,
-    describe: 'list number of branches beneath each sub-path',
+    describe: 'list number of child branches beneath each sub-path',
+    type: 'boolean'
+})
+.option('a', {
+    alias: 'all',
+    default: true,
+    describe: 'count all branches beneath a sub-path intead of just direct children',
     type: 'boolean'
 })
 .option('c', {
@@ -25,6 +31,13 @@ const argv = require('yargs')
     describe: 'list number of urls per folder',
     type: 'number'
 })
+.option('f', {
+    alias: 'file',
+    default: false,
+    describe: 'use local copies instead of fetching from the host',
+    type: 'boolean'
+})
 .argv
+const url = argv._[0];
 
-sitemap2csv(argv._[0], argv.expandPaths, argv.structure, argv.countSingles, argv.limit);
+sitemap2csv(url, argv);
