@@ -2,12 +2,21 @@ const wreck = require('wreck');
 const parser = require('fast-xml-parser');
 const url = require('url');
 const parserOptions = {};
-
+const fs = require('fs');
+const _ = require('lodash');
 const tags = ['loc', 'lastmod', 'changefreq', 'priority'];
 let allParsedSitemaps = [];
 let sitemap2csv;
+let fileIndex = 0;
 
-const getSitemap = async (url) => {
+
+const getSitemap = async (url, fileNameBase) => {
+  if (fileNameBase) {
+    // can stash xmls locally to save bandwidth
+    const payload = fs.readFileSync(`${fileNameBase}_${fileIndex}.xml`);
+    fileIndex++;
+    return payload.toString();
+  }
   const { payload } = await wreck.get(url, {});
   return payload.toString();
 };
@@ -86,12 +95,58 @@ const exportCsv = async (expandPaths) => {
   });
 };
 
-sitemap2csv = async(url) => {
-  const sitemap = await getSitemap(url);
+sitemap2csv = async(url, countSingles, fileNameBase) => {
+  const sitemap = await getSitemap(url, fileNameBase);
   await parseXml(sitemap);
 };
 
-module.exports = async(url, expandPaths = false) => {
-  await sitemap2csv(url);
-  return exportCsv(expandPaths);
+// builds the site structure with the --structure option
+const structureBody = {};
+const buildStructure = (entry, countAll) => {
+  let path = new URL(entry.loc).pathname;
+  // make sure paths don't have trailing slash:
+  if (path.endsWith('/')) {
+    path = path.slice(0, path.length - 1);
+  }
+  const parts = path.split('/');
+  // count every occurence of a path component:
+  if (countAll) {
+    // add one for root:
+    structureBody['/'] = structureBody['/'] ? structureBody['/'] + 1 : 1;
+    parts.forEach((p, i) => {
+      let currentPath = parts.slice(0, i).join('/');
+      if (currentPath === '') {
+        return;
+      }
+      structureBody[currentPath] = structureBody[currentPath] ? structureBody[currentPath] + 1 : 1;
+    });
+  } else {
+    // only count the children *directly* beneath each path:
+    let currentPath = parts.slice(0, parts.length - 1).join('/');
+    structureBody[currentPath] = structureBody[currentPath] ? structureBody[currentPath] + 1 : 1;
+  }
+};
+
+module.exports = async(url, options) => {
+  if (options.useFiles) {
+    const fileNameBase = new URL(url).host;
+    await sitemap2csv(url, fileNameBase);
+  } else {
+    await sitemap2csv(url);
+  }
+  // make sure list is uniq:
+  allParsedSitemaps = _.uniqBy(allParsedSitemaps, 'loc');
+  if (options.structure) {
+    allParsedSitemaps.forEach(entry => {
+      buildStructure(entry, options.all);
+    });
+    console.log('path,number of links');
+    Object.keys(structureBody).sort().forEach(k => {
+      if (options.countSingles || structureBody[k] > 1) {
+        console.log(`${k},${structureBody[k]}`);
+      }
+    });
+    return;
+  }
+  exportCsv(options.expandPaths, options.limit);
 };
